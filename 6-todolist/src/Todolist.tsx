@@ -86,12 +86,12 @@ export const Todolist = (props: PropsType) => {
                     </ul>
             }
             <div>
-                <Button className={filter === 'all' ? 'active-filter' : ''} title={'All'}
-                        onClick={() => changeFilterTasksHandler('all')}/>
-                <Button className={filter === 'active' ? 'active-filter' : ''} title={'Active'}
-                        onClick={() => changeFilterTasksHandler('active')}/>
-                <Button className={filter === 'completed' ? 'active-filter' : ''} title={'Completed'}
-                        onClick={() => changeFilterTasksHandler('completed')}/>
+                <Button className={filter === 'All' ? 'active-filter' : ''} title={'All'}
+                        onClick={() => changeFilterTasksHandler('All')}/>
+                <Button className={filter === 'Active' ? 'active-filter' : ''} title={'Active'}
+                        onClick={() => changeFilterTasksHandler('Active')}/>
+                <Button className={filter === 'Completed' ? 'active-filter' : ''} title={'Completed'}
+                        onClick={() => changeFilterTasksHandler('Completed')}/>
             </div>
         </div>
     )

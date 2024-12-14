@@ -1,6 +1,6 @@
 import './App.css';
 import {Todolist} from "./Todolist";
-import React, {useReducer, useState} from "react";
+import React, {useState} from "react";
 import {v1} from "uuid";
 import {AddItemForm} from "./AddItemForm";
 import AppBar from '@mui/material/AppBar';
@@ -45,7 +45,7 @@ function App() {
 		{id: todolistID2, title: 'What to buy', filter: 'all'},
 	])
 
-	let [tasks, setTasks] = useReducer<TasksStateType>({
+	let [tasks, setTasks] = useState<TasksStateType>({
 		[todolistID1]: [
 			{id: v1(), title: 'HTML&CSS', isDone: true},
 			{id: v1(), title: 'JS', isDone: true},

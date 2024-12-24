@@ -30,12 +30,11 @@ export const AppHttpRequests = () => {
             todolists.forEach(tl => {
                 axios.get<GetTaskResponse>(`https://social-network.samuraijs.com/api/1.1/todo-lists/${tl.id}/tasks`, configs)
                     .then(res => {
-                        setTasks({...tasks, [tl.id]: res.data.items})
+                        setTasks(prev => ({...prev, [tl.id]: res.data.items}))
                     })
             })
         })
     }, [])
-
 
     const createTodolistHandler = (title: string) => {
         axios.post<Response<{
@@ -46,16 +45,17 @@ export const AppHttpRequests = () => {
                 setTodolists([newTodo, ...todolists])
             })
     }
-
     const removeTodolistHandler = (id: string) => {
-        axios.delete<Response>(`https://social-network.samuraijs.com/api/1.1/todo-lists${id}`, configs)
+        axios.delete<Response>(`https://social-network.samuraijs.com/api/1.1/todo-lists$/${id}`, configs)
             .then(() => setTodolists(todolists.filter(tl => tl.id !== id)))
     }
-
     const updateTodolistHandler = (id: string, title: string) => {
-        // update todolist title
+        axios.put(`https://social-network.samuraijs.com/api/1.1/todo-lists/${id}`, {title}, configs)
+            .then(res => {
+                const newTodolist = todolists.map(tl => tl.id === id ? {...tl, title} : tl)
+                setTodolists(newTodolist)
+            })
     }
-
     const createTaskHandler = (title: string, todolistId: string) => {
         axios.post<Response<{
             item: Task
@@ -65,11 +65,10 @@ export const AppHttpRequests = () => {
                 setTasks({...tasks, [todolistId]: [newTask, ...tasks[todolistId]]})
             })
     }
-
     const removeTaskHandler = (taskId: string, todolistId: string) => {
-        // remove task
+        axios.delete(`https://social-network.samuraijs.com/api/1.1/todo-lists/${todolistId}/tasks/${taskId}`, configs)
+            .then(() => setTasks({...tasks, [todolistId]: tasks[todolistId].filter(t => t.id !== taskId)}))
     }
-
     const changeTaskStatusHandler = (e: ChangeEvent<HTMLInputElement>, task: Task) => {
         const model: BaseTask = {
             title: task.title,
@@ -88,9 +87,14 @@ export const AppHttpRequests = () => {
                 setTasks({...tasks, [task.todoListId]: tasks[task.todoListId].map(t => t.id === task.id ? newTask : t)})
             })
     }
-
     const changeTaskTitleHandler = (title: string, task: any) => {
-        // update task title
+        axios.put(`https://social-network.samuraijs.com/api/1.1/todo-lists/todo-lists/{todolistId}/tasks/${task.id}`, configs)
+            .then(res => {
+                setTasks({
+                    ...tasks,
+                    [task.todoListId]: tasks[task.todoListId].map(t => t.id === task.id ? {...t, title} : t)
+                })
+            })
     }
 
     return (
@@ -98,38 +102,40 @@ export const AppHttpRequests = () => {
             <AddItemForm addItem={createTodolistHandler}/>
 
             {/* Todolists */}
-            {todolists.map((tl: any) => {
-                return (
-                    <div key={tl.id} style={todolist}>
-                        <div>
-                            <EditableSpan
-                                value={tl.title}
-                                onChange={(title: string) => updateTodolistHandler(tl.id, title)}
-                            />
-                            <button onClick={() => removeTodolistHandler(tl.id)}>x</button>
-                        </div>
-                        <AddItemForm addItem={title => createTaskHandler(title, tl.id)}/>
+            {todolists
+                .filter(task => task)
+                .map((tl: any) => {
+                    return (
+                        <div key={tl.id} style={todolist}>
+                            <div>
+                                <EditableSpan
+                                    value={tl.title}
+                                    onChange={(title: string) => updateTodolistHandler(tl.id, title)}
+                                />
+                                <button onClick={() => removeTodolistHandler(tl.id)}>x</button>
+                            </div>
+                            <AddItemForm addItem={title => createTaskHandler(title, tl.id)}/>
 
-                        {/* Tasks */}
-                        {!!tasks[tl.id] &&
-                            tasks[tl.id].map((task) => {
-                                return (
-                                    <div key={task.id}>
-                                        <Checkbox
-                                            checked={task.status === TaskStatus.Completed}
-                                            onChange={e => changeTaskStatusHandler(e, task)}
-                                        />
-                                        <EditableSpan
-                                            value={task.title}
-                                            onChange={title => changeTaskTitleHandler(title, task)}
-                                        />
-                                        <button onClick={() => removeTaskHandler(task.id, tl.id)}>x</button>
-                                    </div>
-                                )
-                            })}
-                    </div>
-                )
-            })}
+                            {/* Tasks */}
+                            {!!tasks[tl.id] &&
+                                tasks[tl.id].map((task) => {
+                                    return (
+                                        <div key={task.id}>
+                                            <Checkbox
+                                                checked={task.status === TaskStatus.Completed}
+                                                onChange={e => changeTaskStatusHandler(e, task)}
+                                            />
+                                            <EditableSpan
+                                                value={task.title}
+                                                onChange={title => changeTaskTitleHandler(title, task)}
+                                            />
+                                            <button onClick={() => removeTaskHandler(task.id, tl.id)}>x</button>
+                                        </div>
+                                    )
+                                })}
+                        </div>
+                    )
+                })}
         </div>
     )
 }

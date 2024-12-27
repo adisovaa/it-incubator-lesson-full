@@ -1,0 +1,6 @@
+export { tasksReducer } from "./tasks-reducer"
+export { todolistsReducer } from "./todolists-reducer"
+export { removeTaskAC } from "./tasks-reducer"
+export { changeTaskStatusAC } from "./tasks-reducer"
+export { addTaskAC } from "./tasks-reducer"
+export { changeTaskTitleAC } from "./tasks-reducer"

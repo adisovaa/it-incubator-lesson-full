@@ -1,26 +1,27 @@
 import { v1 } from "uuid"
+import { Todolist } from "../api/todolistsApi.types"
+import { AppDispatch } from "../../../app/store"
+import { todolistsApi } from "../api/todolistsApi"
 
 export type FilterValuesType = "all" | "active" | "completed"
 
-export type TodolistType = {
-  id: string
-  title: string
-  filter: FilterValuesType
-}
+export type DomainTodolist = Todolist & { filter: FilterValuesType }
 
-const initialState: TodolistType[] = []
+const initialState: DomainTodolist[] = []
 
-export const todolistsReducer = (state: TodolistType[] = initialState, action: ActionsType): TodolistType[] => {
+export const todolistsReducer = (state: DomainTodolist[] = initialState, action: ActionsType): DomainTodolist[] => {
   switch (action.type) {
     case "REMOVE-TODOLIST": {
       return state.filter((tl) => tl.id !== action.payload.id)
     }
 
     case "ADD-TODOLIST": {
-      const newTodolist: TodolistType = {
+      const newTodolist: DomainTodolist = {
         id: action.payload.todolistId,
         title: action.payload.title,
         filter: "all",
+        addedDate: "",
+        order: 0,
       }
       return [...state, newTodolist]
     }
@@ -31,6 +32,10 @@ export const todolistsReducer = (state: TodolistType[] = initialState, action: A
 
     case "CHANGE-TODOLIST-FILTER": {
       return state.map((tl) => (tl.id === action.payload.id ? { ...tl, filter: action.payload.filter } : tl))
+    }
+
+    case "SET_TODOLISTS": {
+      return action.payload.todolists.map((tl) => ({ ...tl, filter: "all" }))
     }
 
     default:
@@ -55,14 +60,28 @@ export const changeTodolistFilterAC = (payload: { id: string; filter: FilterValu
   return { type: "CHANGE-TODOLIST-FILTER", payload } as const
 }
 
+export const setTodolistAC = (todolists: Todolist[]) => {
+  return { type: "SET_TODOLISTS", payload: { todolists } } as const
+}
+
+//Thunks
+export const fetchTodolistsThunk = (dispatch: AppDispatch) => () => {
+  debugger
+  todolistsApi.getTodolists().then((res) => {
+    dispatch(setTodolistAC(res.data))
+  })
+}
+
 // Actions types
 export type RemoveTodolistActionType = ReturnType<typeof removeTodolistAC>
 export type AddTodolistActionType = ReturnType<typeof addTodolistAC>
 export type ChangeTodolistTitleActionType = ReturnType<typeof changeTodolistTitleAC>
 export type ChangeTodolistFilterActionType = ReturnType<typeof changeTodolistFilterAC>
+export type SetTodolistActionType = ReturnType<typeof setTodolistAC>
 
 type ActionsType =
   | RemoveTodolistActionType
   | AddTodolistActionType
   | ChangeTodolistTitleActionType
   | ChangeTodolistFilterActionType
+  | SetTodolistActionType

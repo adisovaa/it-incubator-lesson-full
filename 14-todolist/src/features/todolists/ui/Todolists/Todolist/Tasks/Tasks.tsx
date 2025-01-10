@@ -5,22 +5,20 @@ import { DomainTodolist } from "../../../../model/todolists-reducer"
 import { Task } from "./Task/Task"
 import { useEffect } from "react"
 import { useDispatch } from "react-redux"
-import { fetchTasksThunk } from "../../../../model/tasks-reducer"
+import { fetchTasksTC } from "../../../../model/tasks-reducer"
 import { TaskStatus } from "common/enums"
-import { DomainTask } from "../../../../api/tasksApi.types"
 
 type Props = {
-  task: DomainTask
   todolist: DomainTodolist
 }
 
-export const Tasks = ({ todolist, task }: Props) => {
+export const Tasks = ({ todolist }: Props) => {
   const tasks = useAppSelector(selectTasks)
 
   const dispatch = useDispatch()
 
   useEffect(() => {
-    dispatch(fetchTasksThunk(todolist.id))
+    dispatch(fetchTasksTC(todolist.id))
   }, [])
 
   const allTodolistTasks = tasks[todolist.id]

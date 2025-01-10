@@ -65,8 +65,7 @@ export const setTodolistAC = (todolists: Todolist[]) => {
 }
 
 //Thunks
-export const fetchTodolistsThunk = (dispatch: AppDispatch) => () => {
-  debugger
+export const fetchTodolistsTC = () => (dispatch: AppDispatch) => {
   todolistsApi.getTodolists().then((res) => {
     dispatch(setTodolistAC(res.data))
   })

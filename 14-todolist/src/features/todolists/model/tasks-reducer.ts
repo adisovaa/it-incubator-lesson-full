@@ -94,21 +94,18 @@ export const removeTaskAC = (payload: { taskId: string; todolistId: string }) =>
     payload,
   } as const
 }
-
 export const addTaskAC = (payload: { title: string; todolistId: string }) => {
   return {
     type: "ADD-TASK",
     payload,
   } as const
 }
-
 export const changeTaskStatusAC = (payload: { taskId: string; isDone: boolean; todolistId: string }) => {
   return {
     type: "CHANGE_TASK_STATUS",
     payload,
   } as const
 }
-
 export const changeTaskTitleAC = (payload: { taskId: string; title: string; todolistId: string }) => {
   return {
     type: "CHANGE_TASK_TITLE",
@@ -116,14 +113,31 @@ export const changeTaskTitleAC = (payload: { taskId: string; title: string; todo
   } as const
 }
 
-export const fetchTasksThunk = (id: string) => {
-  return (dispatch: AppDispatch) => {
-    tasksApi.getTasks(id).then((res) => {
-      const tasks = res.data.items
-      dispatch(setTasksAC({ todolistId: id, tasks }))
+export const fetchTasksTC = (todolistId: string) => (dispatch: AppDispatch) => {
+  tasksApi.getTasks(todolistId).then((res) => {
+    const tasks = res.data.items
+    dispatch(setTasksAC({ todolistId, tasks }))
+  })
+}
+
+export const deleteTaskTC = (arg: { taskId: string; todolistId: string }) => (dispatch: AppDispatch) => {
+  tasksApi.deleteTask(arg).then((res) => {
+    dispatch(removeTaskAC(arg))
+  })
+}
+
+export const addTaskTC = (arg: { title: string; todolistId: string }) => (dispatch: AppDispatch) => {
+  tasksApi.createTask(arg).then((res) => {
+    dispatch(addTaskAC(arg))
+  })
+}
+
+export const changeTaskStatusTC =
+  (arg: { taskId: string; isDone: TaskStatus; todolistId: string }) => (dispatch: AppDispatch) => {
+    tasksApi.updateTask(arg).then((res) => {
+      dispatch(changeTaskStatusAC(arg))
     })
   }
-}
 
 // Actions types
 export type SetTasksActionType = ReturnType<typeof setTasksAC>

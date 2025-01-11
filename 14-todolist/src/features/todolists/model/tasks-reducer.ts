@@ -47,13 +47,14 @@ export const tasksReducer = (state: TasksStateType = initialState, action: Actio
     }
 
     case "CHANGE_TASK_TITLE": {
+      const { id, todoListId, title } = action.payload.task
       return {
         ...state,
-        [action.payload.todolistId]: state[action.payload.todolistId].map((t) =>
-          t.id === action.payload.taskId
+        [todoListId]: state[todoListId].map((t) =>
+          t.id === id
             ? {
                 ...t,
-                title: action.payload.title,
+                title: title,
               }
             : t,
         ),
@@ -61,7 +62,7 @@ export const tasksReducer = (state: TasksStateType = initialState, action: Actio
     }
 
     case "ADD-TODOLIST":
-      return { ...state, [action.payload.todolistId]: [] }
+      return { ...state, [action.payload.todolist.id]: [] }
 
     case "REMOVE-TODOLIST": {
       let copyState = { ...state }
@@ -96,7 +97,7 @@ export const changeTaskStatusAC = (payload: { task: DomainTask }) => {
     payload,
   } as const
 }
-export const changeTaskTitleAC = (payload: { taskId: string; title: string; todolistId: string }) => {
+export const changeTaskTitleAC = (payload: { task: DomainTask }) => {
   return {
     type: "CHANGE_TASK_TITLE",
     payload,
@@ -109,19 +110,16 @@ export const fetchTasksTC = (todolistId: string) => (dispatch: AppDispatch) => {
     dispatch(setTasksAC({ todolistId, tasks }))
   })
 }
-
 export const deleteTaskTC = (arg: { taskId: string; todolistId: string }) => (dispatch: AppDispatch) => {
   tasksApi.deleteTask(arg).then((res) => {
     dispatch(removeTaskAC(arg))
   })
 }
-
 export const addTaskTC = (arg: { title: string; todolistId: string }) => (dispatch: AppDispatch) => {
   tasksApi.createTask(arg).then((res) => {
     dispatch(addTaskAC({ task: res.data.data.item }))
   })
 }
-
 export const updateTaskStatusTC = (task: DomainTask) => (dispatch: AppDispatch) => {
   // const model: any = {
   //   title: task.title,
@@ -134,6 +132,11 @@ export const updateTaskStatusTC = (task: DomainTask) => (dispatch: AppDispatch) 
 
   tasksApi.updateTask({ taskId: task.id, todolistId: task.todoListId, model: task }).then((res) => {
     dispatch(changeTaskStatusAC({ task }))
+  })
+}
+export const changeTaskTitleTC = (task: DomainTask) => (dispatch: AppDispatch) => {
+  tasksApi.updateTask({ todolistId: task.todoListId, taskId: task.id, model: task }).then((res) => {
+    dispatch(changeTaskTitleAC({ task }))
   })
 }
 

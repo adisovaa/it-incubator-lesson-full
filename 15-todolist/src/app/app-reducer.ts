@@ -6,7 +6,7 @@ export type RequestStatus = "idle" | "loading" | "succeeded" | "failed"
 const initialState = {
   themeMode: "light" as ThemeMode,
   status: "loading" as RequestStatus,
-  error: "sdsds" as string | null,
+  error: null as string | null,
 }
 
 export const appReducer = (state: InitialState = initialState, action: ActionsType): InitialState => {

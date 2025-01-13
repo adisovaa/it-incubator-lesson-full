@@ -1,12 +1,13 @@
 import { Dispatch } from "redux"
 import { todolistsApi } from "../api/todolistsApi"
 import { Todolist } from "../api/todolistsApi.types"
-import { setAppStatusAC } from "../../../app/app-reducer"
+import { RequestStatus, setAppStatusAC } from "../../../app/app-reducer"
 
 export type FilterValuesType = "all" | "active" | "completed"
 
 export type DomainTodolist = Todolist & {
   filter: FilterValuesType
+  entityStatus: RequestStatus
 }
 
 const initialState: DomainTodolist[] = []
@@ -14,7 +15,7 @@ const initialState: DomainTodolist[] = []
 export const todolistsReducer = (state: DomainTodolist[] = initialState, action: ActionsType): DomainTodolist[] => {
   switch (action.type) {
     case "SET-TODOLISTS": {
-      return action.todolists.map((tl) => ({ ...tl, filter: "all" }))
+      return action.todolists.map((tl) => ({ ...tl, filter: "all", entityStatus: "idle" }))
     }
 
     case "REMOVE-TODOLIST": {
@@ -25,6 +26,7 @@ export const todolistsReducer = (state: DomainTodolist[] = initialState, action:
       const newTodolist: DomainTodolist = {
         ...action.payload.todolist,
         filter: "all",
+        entityStatus: "idle",
       }
       return [newTodolist, ...state]
     }
@@ -35,6 +37,17 @@ export const todolistsReducer = (state: DomainTodolist[] = initialState, action:
 
     case "CHANGE-TODOLIST-FILTER": {
       return state.map((tl) => (tl.id === action.payload.id ? { ...tl, filter: action.payload.filter } : tl))
+    }
+
+    case "CHANGE_TODOLIST_ENTITY_STATUS": {
+      return state.map((tl) =>
+        tl.id === action.payload.id
+          ? {
+              ...tl,
+              entityStatus: action.payload.entityStatus,
+            }
+          : tl,
+      )
     }
 
     default:
@@ -62,6 +75,9 @@ export const changeTodolistFilterAC = (payload: { id: string; filter: FilterValu
 export const setTodolistsAC = (todolists: Todolist[]) => {
   return { type: "SET-TODOLISTS", todolists } as const
 }
+export const changeTodolistEntityStatusAC = (payload: { id: string; entityStatus: RequestStatus }) => {
+  return { type: "CHANGE_TODOLIST_ENTITY_STATUS", payload } as const
+}
 
 // Actions types
 export type RemoveTodolistActionType = ReturnType<typeof removeTodolistAC>
@@ -69,6 +85,7 @@ export type AddTodolistActionType = ReturnType<typeof addTodolistAC>
 export type ChangeTodolistTitleActionType = ReturnType<typeof changeTodolistTitleAC>
 export type ChangeTodolistFilterActionType = ReturnType<typeof changeTodolistFilterAC>
 export type SetTodolistsActionType = ReturnType<typeof setTodolistsAC>
+export type ChangeTodolistEntityStatusActionType = ReturnType<typeof changeTodolistEntityStatusAC>
 
 // Thunks
 
@@ -108,3 +125,4 @@ type ActionsType =
   | ChangeTodolistTitleActionType
   | ChangeTodolistFilterActionType
   | SetTodolistsActionType
+  | ChangeTodolistEntityStatusActionType

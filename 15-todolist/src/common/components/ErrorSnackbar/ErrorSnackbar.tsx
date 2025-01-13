@@ -1,26 +1,29 @@
 import Button from "@mui/material/Button"
 import Snackbar, { SnackbarCloseReason } from "@mui/material/Snackbar"
-import { SyntheticEvent, useState } from "react"
+import { useAppSelector } from "common/hooks"
+import { selectError } from "../../../app/appSelectors"
+import { useDispatch } from "react-redux"
+import { Alert } from "@mui/material"
+import { setAppErrorAC } from "../../../app/app-reducer"
 
 export const ErrorSnackbar = () => {
-  const [open, setOpen] = useState(true)
-
-  const handleClick = () => {
-    setOpen(true)
-  }
+  const error = useAppSelector(selectError)
+  const dispatch = useDispatch()
 
   const handleClose = (event: React.SyntheticEvent | Event, reason?: SnackbarCloseReason) => {
     if (reason === "clickaway") {
       return
     }
-
-    setOpen(false)
+    dispatch(setAppErrorAC(null))
   }
 
   return (
     <div>
-      <Button onClick={handleClick}>Open Snackbar</Button>
-      <Snackbar open={open} autoHideDuration={6000} onClose={handleClose} message="Note archived"></Snackbar>
+      <Snackbar open={error !== null} autoHideDuration={6000} onClose={handleClose}>
+        <Alert onClose={handleClose} severity="error" variant={"filled"}>
+          {error}
+        </Alert>
+      </Snackbar>
     </div>
   )
 }

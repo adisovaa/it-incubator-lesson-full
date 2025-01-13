@@ -6,6 +6,7 @@ export type RequestStatus = "idle" | "loading" | "succeeded" | "failed"
 const initialState = {
   themeMode: "light" as ThemeMode,
   status: "loading" as RequestStatus,
+  error: "sdsds" as string | null,
 }
 
 export const appReducer = (state: InitialState = initialState, action: ActionsType): InitialState => {
@@ -14,6 +15,8 @@ export const appReducer = (state: InitialState = initialState, action: ActionsTy
       return { ...state, themeMode: action.payload.themeMode }
     case "SET_STATUS":
       return { ...state, status: action.payload.status }
+    case "SET_ERROR":
+      return { ...state, error: action.payload.error }
     default:
       return state
   }
@@ -34,7 +37,17 @@ export const setAppStatusAC = (status: RequestStatus) => {
   } as const
 }
 
+export const setAppErrorAC = (error: string | null) => {
+  return {
+    type: "SET_ERROR",
+    payload: { error },
+  } as const
+}
+
 // Actions types
-type ChangeThemeActionType = ReturnType<typeof changeThemeAC> | ReturnType<typeof setAppStatusAC>
+type ChangeThemeActionType =
+  | ReturnType<typeof changeThemeAC>
+  | ReturnType<typeof setAppStatusAC>
+  | ReturnType<typeof setAppErrorAC>
 
 type ActionsType = ChangeThemeActionType

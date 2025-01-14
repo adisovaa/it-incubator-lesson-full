@@ -5,6 +5,7 @@ import { DomainTask, UpdateTaskDomainModel, UpdateTaskModel } from "../api/tasks
 import { AddTodolistActionType, RemoveTodolistActionType } from "./todolists-reducer"
 import { setAppErrorAC, setAppStatusAC } from "../../../app/app-reducer"
 import { ResultCode } from "common/enums"
+import { handleAppError, handleServerNetworkError } from "common/utilits"
 
 export type TasksStateType = {
   [key: string]: DomainTask[]
@@ -111,15 +112,19 @@ export const removeTaskTC = (arg: { taskId: string; todolistId: string }) => (di
 }
 
 export const addTaskTC = (arg: { title: string; todolistId: string }) => (dispatch: Dispatch) => {
-  tasksApi.createTask(arg).then((res) => {
-    if (res.data.resultCode === ResultCode.Success) {
-      dispatch(addTaskAC({ task: res.data.data.item }))
-      dispatch(setAppStatusAC("succeeded"))
-    } else {
-      dispatch(setAppErrorAC(res.data.messages.length ? res.data.messages[0] : "some error occurred"))
-      dispatch(setAppStatusAC("failed"))
-    }
-  })
+  tasksApi
+    .createTask(arg)
+    .then((res) => {
+      if (res.data.resultCode === ResultCode.Success) {
+        dispatch(addTaskAC({ task: res.data.data.item }))
+        dispatch(setAppStatusAC("succeeded"))
+      } else {
+        handleAppError(res.data, dispatch)
+      }
+    })
+    .catch((err) => {
+      handleServerNetworkError(err, dispatch)
+    })
 }
 
 export const updateTaskTC =

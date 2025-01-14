@@ -1,7 +1,9 @@
 import { Dispatch } from "redux"
 import { todolistsApi } from "../api/todolistsApi"
 import { Todolist } from "../api/todolistsApi.types"
-import { RequestStatus, setAppStatusAC } from "../../../app/app-reducer"
+import { RequestStatus, setAppErrorAC, setAppStatusAC } from "../../../app/app-reducer"
+import { ResultCode } from "common/enums"
+import { handleAppError, handleServerNetworkError } from "common/utilits"
 
 export type FilterValuesType = "all" | "active" | "completed"
 
@@ -99,10 +101,19 @@ export const fetchTodolistsTC = () => (dispatch: Dispatch) => {
 
 export const addTodolistTC = (title: string) => (dispatch: Dispatch) => {
   dispatch(setAppStatusAC("loading"))
-  todolistsApi.createTodolist(title).then((res) => {
-    dispatch(addTodolistAC(res.data.data.item))
-    dispatch(setAppStatusAC("succeeded"))
-  })
+  todolistsApi
+    .createTodolist(title)
+    .then((res) => {
+      if (res.data.resultCode === ResultCode.Success) {
+        dispatch(addTodolistAC(res.data.data.item))
+        dispatch(setAppStatusAC("succeeded"))
+      } else {
+        handleAppError(res.data, dispatch)
+      }
+    })
+    .catch((err) => {
+      handleServerNetworkError(err, dispatch)
+    })
 }
 
 export const removeTodolistTC = (id: string) => (dispatch: Dispatch) => {

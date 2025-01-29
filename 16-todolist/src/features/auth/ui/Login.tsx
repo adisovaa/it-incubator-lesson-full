@@ -6,29 +6,50 @@ import FormGroup from "@mui/material/FormGroup"
 import FormLabel from "@mui/material/FormLabel"
 import Grid from "@mui/material/Grid"
 import TextField from "@mui/material/TextField"
-import { useAppSelector } from "common/hooks"
+import { useAppDispatch, useAppSelector } from "common/hooks"
 import { getTheme } from "common/theme"
 import { selectThemeMode } from "../../../app/appSelectors"
-import { SubmitHandler, useForm } from "react-hook-form"
+import { Controller, SubmitHandler, useForm } from "react-hook-form"
+import { loginTC } from "../model/auth-reducer"
+import { selectIsLoggedIn } from "../model/authSelectors"
+import { useNavigate } from "react-router"
+import { useEffect } from "react"
+import { Path } from "common/routing/Rounting"
 
-type Inputs = {
+export type LoginInputs = {
   email: string
   password: string
   rememberMe: boolean
+  captcha?: string
 }
 
 export const Login = () => {
   const themeMode = useAppSelector(selectThemeMode)
   const theme = getTheme(themeMode)
 
+  const isLoggedIn = useAppSelector(selectIsLoggedIn)
+
+  const dispatch = useAppDispatch()
+
+  const navigate = useNavigate()
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      navigate(Path.Main)
+    }
+  }, [isLoggedIn])
+
   const {
+    control,
+    reset,
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<Inputs>()
+  } = useForm<LoginInputs>({ defaultValues: { email: "free@gmail.com", password: "wewewe", rememberMe: false } })
 
-  const onSubmit: SubmitHandler<Inputs> = (data) => {
-    console.log(data)
+  const onSubmit: SubmitHandler<LoginInputs> = (data) => {
+    dispatch(loginTC(data))
+    reset()
   }
 
   return (
@@ -57,9 +78,36 @@ export const Login = () => {
           </FormLabel>
           <FormGroup>
             <form onSubmit={handleSubmit(onSubmit)}>
-              <TextField label="Email" margin="normal" {...register("email")} />
-              <TextField type="password" label="Password" margin="normal" {...register("password")} />
-              <FormControlLabel label={"Remember me"} control={<Checkbox />} {...register("rememberMe")} />
+              <TextField
+                label="Email"
+                margin="normal"
+                {...register("email", {
+                  required: "Email is required",
+                  pattern: {
+                    value: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/,
+                    message: "Incorrect email address",
+                  },
+                })}
+              />
+              <TextField
+                type="password"
+                label="Password"
+                margin="normal"
+                {...register("password", {
+                  required: "Password is required",
+                })}
+              />
+              <FormControlLabel
+                label={"Remember me"}
+                control={
+                  <Controller
+                    name="rememberMe"
+                    control={control}
+                    render={({ field: { value, ...rest } }) => <Checkbox {...rest} checked={value} />}
+                  />
+                }
+              />
+
               <Button type={"submit"} variant={"contained"} color={"primary"}>
                 Login
               </Button>

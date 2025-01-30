@@ -10,12 +10,15 @@ type InitialStateType = typeof initialState
 
 const initialState = {
   isLoggedIn: false,
+  isInitialized: false,
 }
 
 export const authReducer = (state: InitialStateType = initialState, action: ActionType): InitialStateType => {
   switch (action.type) {
     case "SET_IS_LOGGED_IN":
       return { ...state, isLoggedIn: action.payload.isLoggedIn }
+    case "SET_IS_INITIALIZED":
+      return { ...state, isInitialized: action.payload.isInitialized }
     default:
       return state
   }
@@ -25,9 +28,12 @@ export const authReducer = (state: InitialStateType = initialState, action: Acti
 const setIsLoggedInAC = (isLoggedIn: boolean) => {
   return { type: "SET_IS_LOGGED_IN", payload: { isLoggedIn } } as const
 }
+const setIsInitializedAC = (isInitialized: boolean) => {
+  return { type: "SET_IS_INITIALIZED", payload: { isInitialized } } as const
+}
 
 // action types
-type ActionType = ReturnType<typeof setIsLoggedInAC>
+type ActionType = ReturnType<typeof setIsLoggedInAC> | ReturnType<typeof setIsInitializedAC>
 
 // thunks
 export const loginTC = (data: LoginInputs) => (dispatch: AppDispatch) => {
@@ -80,5 +86,8 @@ export const meTC = () => (dispatch: AppDispatch) => {
     })
     .catch((error) => {
       handleServerNetworkError(error, dispatch)
+    })
+    .finally(() => {
+      dispatch(setIsInitializedAC(true))
     })
 }
